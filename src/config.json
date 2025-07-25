@@ -1,6 +1,6 @@
 {
   "site": {
-    "url": "https://gyoza.lxchapu.com",
+    "url": "https://jorthan.com",
     "title": "Jorthan",
     "description": "Jorthan的个人博客",
     "keywords": "ComputerScience, code",
@@ -21,7 +21,7 @@
       {
         "name": "Github",
         "icon": "icon-github",
-        "url": "https://github.com/lxchapu/astro-gyoza",
+        "url": "https://github.com/J0rthan",
         "color": "rgb(24, 23, 23)"
       },
       {
