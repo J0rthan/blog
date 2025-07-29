@@ -1,5 +1,5 @@
 ---
-title: Printf in C
+title: Linux file permissions
 date: 2024-11-26
 lastMod: 2024-11-26T15:54:02.820Z
 tags: [C]
@@ -9,7 +9,7 @@ summary: Linux File Permissions
 
 ## What are Linux File Permissions?
 
-![0_5FgkfJtRbgCQIJuk](/Users/lkw/Desktop/图片资源/0_5FgkfJtRbgCQIJuk.webp)
+![0_5FgkfJtRbgCQIJuk](https://i.ibb.co/WSXHnjx/1571753779945-pic.jpg)
 
 Linux file permissions consist of three sets of permissions:
 
