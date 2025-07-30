@@ -2,7 +2,7 @@
 title: Linux file permissions
 date: 2024-11-26
 lastMod: 2024-11-26T15:54:02.820Z
-tags: [C]
+tags: [Linux]
 category: Linux
 summary: Linux File Permissions
 ---
