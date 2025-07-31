@@ -9,7 +9,7 @@ summary: Linux File Permissions
 
 ## What are Linux File Permissions?
 
-![0_5FgkfJtRbgCQIJuk](https://i.ibb.co/WSXHnjx/1571753779945-pic.jpg)
+![0_5FgkfJtRbgCQIJuk](https://jorthans-blog-storage.oss-cn-beijing.aliyuncs.com/0_5FgkfJtRbgCQIJuk.webp)
 
 Linux file permissions consist of three sets of permissions:
 
