@@ -3,7 +3,7 @@ title: Printf in C
 date: 2025-05-16
 lastMod: 2025-05-16T15:54:02.820Z
 tags: [C]
-category: C language
+category: C
 summary: This article is about how to use printf function in C
 ---
 

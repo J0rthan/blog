@@ -32,17 +32,11 @@ const groupedPosts = posts.reduce<
   {
     groupedPosts.map((year) => (
       <div class="relative py-10">
-        <h3
-          class="absolute -top-3 -left-8 text-[7rem] text-transparent leading-none font-bold pointer-events-none select-none font-['Atkinson']"
-          style="-webkit-text-stroke: 2px rgb(var(--color-text-primary) / 0.1);"
-        >
-          {year.year}
-        </h3>
         <ul class="space-y-4">
           {year.posts.map((post) => (
             <li class="flex items-baseline space-x-2">
               <span class="shrink-0 text-gray-600 dark:text-gray-300 text-sm">
-                {getShortDate(post.data.date)}
+                {year.year}-{getShortDate(post.data.date)}
               </span>
               <a
                 class="hover:text-accent/80 hover:underline underline-offset-2"
