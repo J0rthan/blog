@@ -1,6 +1,6 @@
 ---
 title: What is alignment
-date: 2025-02-02
+date: 2025-09-02
 lastMod: 2025-09-02T18:22:18.820Z
 tags: [Computer Architecture]
 category: Computer Architecture
