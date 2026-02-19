@@ -184,7 +184,6 @@ onBeforeUnmount(() => {
               <div class="meta-row">
                 <span>{{ featuredPost.date }}</span>
                 <span>{{ featuredPost.wordCount }} 字</span>
-                <span>{{ featuredPost.readingMinutes }} 分钟阅读</span>
               </div>
             </div>
           </article>
@@ -198,7 +197,7 @@ onBeforeUnmount(() => {
               @click="openPost(post.slug)"
             >
               <p class="latest-title">{{ post.title }}</p>
-              <p class="latest-meta">{{ post.date }} · {{ post.readingMinutes }} min</p>
+              <p class="latest-meta">{{ post.date }}</p>
             </button>
           </aside>
         </section>
@@ -224,7 +223,6 @@ onBeforeUnmount(() => {
           <div class="meta-row">
             <span>{{ selectedPost.date }}</span>
             <span>{{ selectedPost.wordCount }} 字</span>
-            <span>{{ selectedPost.readingMinutes }} 分钟阅读</span>
           </div>
           <div class="markdown-body" v-html="selectedPost.html"></div>
         </article>
