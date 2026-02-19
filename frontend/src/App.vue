@@ -4,8 +4,8 @@ import { getAllPosts } from "./lib/posts";
 
 const posts = getAllPosts();
 const selectedSlug = ref("");
-const isDonateView = ref(false);
 const isProjectsView = ref(false);
+const selectedTag = ref("全部");
 const projects = [
   {
     name: "Markdown Blog",
@@ -35,9 +35,25 @@ const selectedPost = computed(() => {
 const isDetailView = computed(() => !!selectedPost.value);
 const activeNav = computed(() => (isProjectsView.value ? "projects" : "home"));
 
-const featuredPost = computed(() => posts[0] || null);
-const gridPosts = computed(() => posts);
-const latestPosts = computed(() => posts.slice(0, 8));
+const tagStats = computed(() => {
+  const counter = new Map();
+  for (const post of posts) {
+    for (const tag of post.tags || []) {
+      counter.set(tag, (counter.get(tag) || 0) + 1);
+    }
+  }
+
+  return [...counter.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "zh-Hans-CN"));
+});
+
+const filteredPosts = computed(() => {
+  if (selectedTag.value === "全部") return posts;
+  return posts.filter((post) => (post.tags || []).includes(selectedTag.value));
+});
+
+const latestPosts = computed(() => filteredPosts.value.slice(0, 10));
 const relatedPosts = computed(() => {
   if (!selectedPost.value) return [];
   return posts.filter((post) => post.slug !== selectedPost.value.slug).slice(0, 4);
@@ -45,13 +61,13 @@ const relatedPosts = computed(() => {
 
 function openPost(slug) {
   selectedSlug.value = slug;
+  isProjectsView.value = false;
   window.location.hash = `#/post/${slug}`;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function backToList() {
   selectedSlug.value = "";
-  isDonateView.value = false;
   isProjectsView.value = false;
   window.location.hash = "#/";
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -59,7 +75,6 @@ function backToList() {
 
 function openHome() {
   selectedSlug.value = "";
-  isDonateView.value = false;
   isProjectsView.value = false;
   window.location.hash = "#/";
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -67,31 +82,14 @@ function openHome() {
 
 function openProjects() {
   selectedSlug.value = "";
-  isDonateView.value = false;
   isProjectsView.value = true;
   window.location.hash = "#/projects";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function openDonate() {
-  selectedSlug.value = "";
-  isDonateView.value = true;
-  isProjectsView.value = false;
-  window.location.hash = "#/donate";
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
 function syncFromHash() {
-  if (window.location.hash === "#/donate") {
-    selectedSlug.value = "";
-    isDonateView.value = true;
-    isProjectsView.value = false;
-    return;
-  }
-
   if (window.location.hash === "#/projects") {
     selectedSlug.value = "";
-    isDonateView.value = false;
     isProjectsView.value = true;
     return;
   }
@@ -99,13 +97,11 @@ function syncFromHash() {
   const match = window.location.hash.match(/^#\/post\/([a-z0-9-]+)$/i);
   if (!match) {
     selectedSlug.value = "";
-    isDonateView.value = false;
     isProjectsView.value = false;
     return;
   }
 
   const slug = match[1];
-  isDonateView.value = false;
   isProjectsView.value = false;
   selectedSlug.value = posts.some((post) => post.slug === slug) ? slug : "";
 }
@@ -130,7 +126,7 @@ onBeforeUnmount(() => {
       <div class="masthead">
         <p class="brand-sub">All voices matter</p>
         <h1 class="brand">Daily Notes</h1>
-        <button class="subscribe-btn" @click="openDonate">打赏</button>
+        <div class="masthead-spacer"></div>
       </div>
       <nav class="top-nav">
         <button class="nav-link" :class="{ active: activeNav === 'home' }" @click="openHome">首页</button>
@@ -139,17 +135,7 @@ onBeforeUnmount(() => {
     </header>
 
     <main v-if="posts.length > 0" class="page-wrap">
-      <section v-if="isDonateView" class="donate-page">
-        <article class="donate-shell">
-          <button class="back-btn" @click="backToList">Back to Newsroom</button>
-          <h2>感谢支持</h2>
-          <p>扫描下方收款码即可打赏。</p>
-          <img class="donate-qr" src="/payment-qr.svg" alt="收款码" />
-          <p class="donate-tip">如需替换为你的收款码，请覆盖 `frontend/public/payment-qr.svg`。</p>
-        </article>
-      </section>
-
-      <section v-else-if="isProjectsView" class="projects-page">
+      <section v-if="isProjectsView" class="projects-page">
         <div class="headline-strip">
           <span>Projects</span>
           <p>这里展示我正在做和做过的项目</p>
@@ -169,42 +155,48 @@ onBeforeUnmount(() => {
       <section v-else-if="!isDetailView" class="list-page">
         <div class="headline-strip">
           <span>Latest</span>
-          <p>{{ featuredPost ? featuredPost.title : "欢迎来到我的博客" }}</p>
+          <p>{{ filteredPosts[0] ? filteredPosts[0].title : "暂无匹配标签的文章" }}</p>
         </div>
 
         <section class="home-grid">
-          <article class="hero-story" v-if="featuredPost" @click="openPost(featuredPost.slug)">
-            <div class="hero-media">
-              <div class="hero-tint"></div>
-            </div>
-            <div class="hero-content">
-              <p class="chip">{{ categoryOf(featuredPost) }}</p>
-              <h2>{{ featuredPost.title }}</h2>
-              <p>{{ featuredPost.summary }}</p>
-              <div class="meta-row">
-                <span>{{ featuredPost.date }}</span>
-                <span>{{ featuredPost.wordCount }} 字</span>
-              </div>
-            </div>
-          </article>
-
           <aside class="latest-panel">
-            <h3>Latest Stories</h3>
-            <button
-              v-for="post in latestPosts"
-              :key="post.slug"
-              class="latest-item"
-              @click="openPost(post.slug)"
-            >
+            <h3>最近发表</h3>
+            <button v-for="post in latestPosts" :key="post.slug" class="latest-item" @click="openPost(post.slug)">
               <p class="latest-title">{{ post.title }}</p>
-              <p class="latest-meta">{{ post.date }}</p>
+              <p class="latest-meta">{{ post.date }} · {{ post.wordCount }} 字</p>
             </button>
+          </aside>
+
+          <aside class="tag-filter-panel">
+            <h3>按标签筛选</h3>
+            <p class="filter-count">当前筛选：{{ selectedTag }}（{{ filteredPosts.length }} 篇）</p>
+            <div class="tag-filter-list">
+              <button
+                class="tag-filter-btn"
+                :class="{ active: selectedTag === '全部' }"
+                @click="selectedTag = '全部'"
+              >
+                全部
+              </button>
+              <button
+                v-for="tagItem in tagStats"
+                :key="tagItem.name"
+                class="tag-filter-btn"
+                :class="{ active: selectedTag === tagItem.name }"
+                @click="selectedTag = tagItem.name"
+              >
+                {{ tagItem.name }} ({{ tagItem.count }})
+              </button>
+            </div>
           </aside>
         </section>
 
-        <section class="card-grid">
-          <article v-for="post in gridPosts" :key="post.slug" class="news-card" @click="openPost(post.slug)">
-            <p class="chip">{{ categoryOf(post) }}</p>
+        <section class="card-grid" v-if="filteredPosts.length > 0">
+          <article v-for="post in filteredPosts" :key="post.slug" class="news-card" @click="openPost(post.slug)">
+            <div class="card-tags" v-if="post.tags && post.tags.length > 0">
+              <span class="chip" v-for="tag in post.tags" :key="`${post.slug}-${tag}`">{{ tag }}</span>
+            </div>
+            <p class="chip" v-else>{{ categoryOf(post) }}</p>
             <h3>{{ post.title }}</h3>
             <p>{{ post.summary }}</p>
             <div class="meta-row">
@@ -213,12 +205,18 @@ onBeforeUnmount(() => {
             </div>
           </article>
         </section>
+
+        <section v-else class="empty-filter">
+          <p>这个标签下还没有文章。</p>
+        </section>
       </section>
 
       <section v-else class="detail-page">
         <article class="article-shell">
           <button class="back-btn" @click="backToList">Back to Newsroom</button>
-          <p class="chip">{{ categoryOf(selectedPost) }}</p>
+          <div class="detail-tags" v-if="selectedPost.tags && selectedPost.tags.length > 0">
+            <span class="detail-tag" v-for="tag in selectedPost.tags" :key="tag">{{ tag }}</span>
+          </div>
           <h2>{{ selectedPost.title }}</h2>
           <div class="meta-row">
             <span>{{ selectedPost.date }}</span>

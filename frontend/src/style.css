@@ -41,6 +41,11 @@ body {
   align-items: center;
 }
 
+.masthead-spacer {
+  justify-self: end;
+  width: 90px;
+}
+
 .brand-sub {
   margin: 0;
   font-size: 12px;
@@ -53,18 +58,6 @@ body {
   font-family: "Source Serif 4", "Times New Roman", serif;
   font-size: clamp(30px, 6vw, 46px);
   font-weight: 600;
-}
-
-.subscribe-btn {
-  justify-self: end;
-  border: 1px solid #465e80;
-  background: #e8edf5;
-  color: #121721;
-  border-radius: 3px;
-  padding: 8px 12px;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
 }
 
 .top-nav {
@@ -132,64 +125,17 @@ body {
   gap: 16px;
 }
 
-.hero-story {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  cursor: pointer;
-}
-
-.hero-media {
-  height: 320px;
-  background:
-    linear-gradient(120deg, rgba(36, 47, 67, 0.9), rgba(31, 79, 142, 0.55)),
-    radial-gradient(circle at 8% 20%, rgba(210, 229, 255, 0.3) 0%, transparent 45%),
-    #1b2330;
-  position: relative;
-}
-
-.hero-tint {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(9, 11, 15, 0.6) 100%);
-}
-
-.hero-content {
-  padding: 18px;
-}
-
-.chip {
-  margin: 0;
-  display: inline-block;
-  background: var(--accent-soft);
-  color: #93beff;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 4px 9px;
-  border-radius: 3px;
-}
-
-.hero-content h2 {
-  margin: 12px 0 10px;
-  font-size: clamp(28px, 4vw, 40px);
-  font-family: "Source Serif 4", "Times New Roman", serif;
-}
-
-.hero-content p {
-  margin: 0;
-  color: var(--text-soft);
-  line-height: 1.65;
-}
-
-.latest-panel {
+.latest-panel,
+.tag-filter-panel {
   border: 1px solid var(--line);
   background: var(--surface);
   padding: 14px;
 }
 
-.latest-panel h3 {
+.latest-panel h3,
+.tag-filter-panel h3 {
   margin: 4px 0 12px;
-  font-size: 18px;
+  font-size: 20px;
   font-family: "Source Serif 4", "Times New Roman", serif;
 }
 
@@ -221,6 +167,36 @@ body {
   font-size: 12px;
 }
 
+.filter-count {
+  margin: 0;
+  color: #8f98aa;
+  font-size: 13px;
+}
+
+.tag-filter-list {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag-filter-btn {
+  border: 1px solid #2c3444;
+  background: #151a22;
+  color: #cad1de;
+  border-radius: 999px;
+  padding: 6px 11px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tag-filter-btn.active {
+  border-color: #3f84d4;
+  background: #193355;
+  color: #d8e9ff;
+}
+
 .card-grid {
   margin-top: 16px;
   display: grid;
@@ -248,6 +224,24 @@ body {
   line-height: 1.55;
 }
 
+.chip {
+  margin: 0;
+  display: inline-block;
+  background: var(--accent-soft);
+  color: #93beff;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 3px;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .meta-row {
   margin-top: 12px;
   display: flex;
@@ -255,6 +249,14 @@ body {
   gap: 10px;
   color: #8f98aa;
   font-size: 12px;
+}
+
+.empty-filter {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 16px;
+  color: var(--text-soft);
 }
 
 .projects-grid {
@@ -292,43 +294,6 @@ body {
   text-decoration: none;
 }
 
-.donate-page {
-  display: grid;
-  place-items: center;
-}
-
-.donate-shell {
-  width: min(520px, 100%);
-  border: 1px solid var(--line);
-  background: var(--surface);
-  padding: 22px;
-  text-align: center;
-}
-
-.donate-shell h2 {
-  margin: 16px 0 8px;
-  font-size: 34px;
-  font-family: "Source Serif 4", "Times New Roman", serif;
-}
-
-.donate-shell p {
-  margin: 0;
-  color: var(--text-soft);
-}
-
-.donate-qr {
-  display: block;
-  width: min(300px, 80%);
-  margin: 18px auto 10px;
-  border: 1px solid #2b3344;
-  background: #fff;
-}
-
-.donate-tip {
-  font-size: 12px;
-  color: #8b95a8;
-}
-
 .detail-page {
   display: grid;
   grid-template-columns: minmax(0, 2fr) 320px;
@@ -355,6 +320,23 @@ body {
   margin: 14px 0 0;
   font-size: clamp(30px, 5vw, 46px);
   font-family: "Source Serif 4", "Times New Roman", serif;
+}
+
+.detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.detail-tag {
+  display: inline-block;
+  border: 1px solid #2f3c54;
+  background: #172338;
+  color: #b8d4ff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
 }
 
 .markdown-body {
@@ -490,16 +472,8 @@ body {
     font-size: 34px;
   }
 
-  .subscribe-btn {
-    grid-column: 2;
-  }
-
   .top-nav {
     gap: 16px;
-  }
-
-  .hero-media {
-    height: 220px;
   }
 
   .card-grid {

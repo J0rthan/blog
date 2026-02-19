@@ -90,7 +90,7 @@ function slugFromPath(path) {
 function parseTags(raw) {
   if (!raw) return [];
   return raw
-    .split(",")
+    .split(/[,\uFF0C\u3001;|\n]/)
     .map((item) => item.trim())
     .filter(Boolean);
 }
