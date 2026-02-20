@@ -5,8 +5,6 @@ import { getAllPosts } from "./lib/posts";
 const posts = getAllPosts();
 const selectedSlug = ref("");
 const isProjectsView = ref(false);
-const isHeaderCompact = ref(false);
-let lastScrollY = 0;
 
 const searchQuery = ref("");
 const selectedTag = ref("全部");
@@ -16,22 +14,10 @@ const pageSize = 9;
 
 const projects = [
   {
-    name: "Markdown Blog",
-    summary: "一个可直接部署到 Vercel 的静态博客，支持 Markdown 发文和字数统计。",
-    stack: "Vue 3, Vite, Vercel",
-    link: "#/",
-  },
-  {
-    name: "Content Toolkit",
-    summary: "内容创作小工具集合，包含标题生成、摘要提取和标签建议。",
-    stack: "TypeScript, Node.js",
-    link: "#/",
-  },
-  {
-    name: "Reading Dashboard",
-    summary: "个人阅读与笔记追踪面板，用于管理主题、进度和输出。",
-    stack: "Vue 3, LocalStorage",
-    link: "#/",
+    name: "blog_backend",
+    summary: "基于SpringBoot(version 3.5.9)的后端新手上手项目，Restful API + JPA + Spring Security + Token鉴权",
+    stack: "SpringBoot SpringMVC Restful API",
+    link: "https://github.com/J0rthan/blog_backend",
   },
 ];
 
@@ -174,39 +160,19 @@ function syncFromHash() {
   selectedSlug.value = posts.some((post) => post.slug === slug) ? slug : "";
 }
 
-function handleScroll() {
-  const y = window.scrollY || 0;
-  if (y < 20) {
-    isHeaderCompact.value = false;
-    lastScrollY = y;
-    return;
-  }
-
-  if (y > lastScrollY + 6 && y > 120) {
-    isHeaderCompact.value = true;
-  } else if (y < lastScrollY - 6) {
-    isHeaderCompact.value = false;
-  }
-
-  lastScrollY = y;
-}
-
 onMounted(() => {
   syncFromHash();
-  lastScrollY = window.scrollY || 0;
   window.addEventListener("hashchange", syncFromHash);
-  window.addEventListener("scroll", handleScroll, { passive: true });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("hashchange", syncFromHash);
-  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
 <template>
   <div class="news-site">
-    <header class="site-header" :class="{ compact: isHeaderCompact }">
+    <header class="site-header">
       <div class="masthead">
         <h1 class="brand">Blog</h1>
         <div class="header-search" v-if="!isProjectsView && !isDetailView">
@@ -288,7 +254,7 @@ onBeforeUnmount(() => {
               <p>没有匹配结果，换个关键词或者重置筛选。</p>
             </section>
 
-            <section class="pagination">
+            <section class="pagination" v-if="totalPages > 1">
               <button @click="gotoPage(currentPage - 1)" :disabled="currentPage === 1">上一页</button>
               <span>第 {{ currentPage }} / {{ totalPages }} 页</span>
               <button @click="gotoPage(currentPage + 1)" :disabled="currentPage === totalPages">下一页</button>
