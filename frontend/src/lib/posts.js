@@ -7,6 +7,52 @@ function escapeHtml(text) {
     .replaceAll("'", "&#39;");
 }
 
+function highlightCode(code, lang = "") {
+  const language = (lang || "").toLowerCase();
+  const source = escapeHtml(code);
+  const placeholders = [];
+
+  const stash = (value) => {
+    const key = `__TOKEN_${placeholders.length}__`;
+    placeholders.push(value);
+    return key;
+  };
+
+  // comments first to avoid getting matched by keyword/string rules
+  let highlighted = source
+    .replace(/(\/\/[^\n]*)/g, (m) => stash(`<span class="tok-comment">${m}</span>`))
+    .replace(/(\/\*[\s\S]*?\*\/)/g, (m) => stash(`<span class="tok-comment">${m}</span>`))
+    .replace(/(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;)/g, (m) => stash(`<span class="tok-string">${m}</span>`));
+
+  const keywordSets = {
+    c: "auto break case char const continue default do double else enum extern float for goto if int long register return short signed sizeof static struct switch typedef union unsigned void volatile while",
+    cpp: "alignas alignof asm auto bool break case catch char class const constexpr continue default delete do double else enum explicit export extern false float for friend goto if inline int long mutable namespace new noexcept nullptr operator private protected public register reinterpret_cast return short signed sizeof static struct switch template this throw true try typedef typeid typename union unsigned using virtual void volatile while",
+    js: "await break case catch class const continue debugger default delete do else export extends false finally for function if import in instanceof let new null of return super switch this throw true try typeof var void while with yield",
+    ts: "abstract any as assert bigint boolean break case catch class const constructor continue debugger declare default delete do else enum export extends false finally for from function get if implements import in infer instanceof interface is keyof let module namespace never new null number object of package private protected public readonly require return set static string super switch symbol this throw true try type typeof undefined unique unknown var void while with yield",
+    java: "abstract assert boolean break byte case catch char class const continue default do double else enum extends false final finally float for goto if implements import instanceof int interface long native new null package private protected public return short static strictfp super switch synchronized this throw throws transient true try void volatile while",
+    py: "and as assert break class continue def del elif else except False finally for from global if import in is lambda None nonlocal not or pass raise return True try while with yield",
+  };
+
+  const fallbackKeywords = keywordSets.js;
+  const languageKeywords =
+    keywordSets[language] ||
+    (language.includes("c") ? keywordSets.c : "") ||
+    (language.includes("java") ? keywordSets.java : "") ||
+    (language.includes("python") ? keywordSets.py : "") ||
+    fallbackKeywords;
+
+  if (languageKeywords) {
+    const pattern = new RegExp(`\\b(${languageKeywords.replaceAll(" ", "|")})\\b`, "g");
+    highlighted = highlighted.replace(pattern, '<span class="tok-keyword">$1</span>');
+  }
+
+  highlighted = highlighted
+    .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="tok-number">$1</span>')
+    .replace(/(^|\n)(\s*#\s*[A-Za-z_]+)/g, '$1<span class="tok-operator">$2</span>');
+
+  return highlighted.replace(/__TOKEN_(\d+)__/g, (_, i) => placeholders[Number(i)]);
+}
+
 function parseFrontmatter(raw) {
   if (!raw.startsWith("---\n")) {
     return { meta: {}, content: raw };
@@ -34,7 +80,19 @@ function parseFrontmatter(raw) {
 }
 
 function inlineMarkdown(text) {
+  const normalizeImageSrc = (src) => {
+    const value = src.trim();
+    if (value.startsWith("../../../public/")) return `/${value.replace("../../../public/", "")}`;
+    return value;
+  };
+
   return text
+    .replace(/!\[(.*?)\]\(([^)\s]+)\)/g, (_, alt, src) => {
+      const safeAlt = alt || "image";
+      const safeSrc = normalizeImageSrc(src);
+      return `<img src="${safeSrc}" alt="${safeAlt}" loading="lazy" />`;
+    })
+    .replace(/``([^`]+?)``/g, "<code>$1</code>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`(.+?)`/g, "<code>$1</code>")
@@ -43,34 +101,88 @@ function inlineMarkdown(text) {
 
 function markdownToHtml(raw) {
   const normalized = raw.replace(/\r\n/g, "\n");
-  const blocks = normalized.split(/\n{2,}/);
+  const lines = normalized.split("\n");
+  const html = [];
+  let textBuffer = [];
+  let inCodeBlock = false;
+  let codeLang = "";
+  let codeLines = [];
 
-  return blocks
-    .map((block) => {
-      const safe = escapeHtml(block.trim());
-      if (!safe) return "";
+  const flushTextBuffer = () => {
+    if (textBuffer.length === 0) return;
 
-      if (safe.startsWith("### ")) return `<h3>${inlineMarkdown(safe.slice(4))}</h3>`;
-      if (safe.startsWith("## ")) return `<h2>${inlineMarkdown(safe.slice(3))}</h2>`;
-      if (safe.startsWith("# ")) return `<h1>${inlineMarkdown(safe.slice(2))}</h1>`;
+    const block = textBuffer.join("\n").trim();
+    textBuffer = [];
+    if (!block) return;
 
-      if (safe.startsWith("- ")) {
-        const lines = safe.split("\n").filter((line) => line.startsWith("- "));
-        const items = lines.map((line) => `<li>${inlineMarkdown(line.slice(2))}</li>`).join("");
-        return `<ul>${items}</ul>`;
+    const blockLines = block.split("\n");
+    if (blockLines.length === 1) {
+      const line = blockLines[0];
+      if (line.startsWith("### ")) {
+        html.push(`<h3>${inlineMarkdown(escapeHtml(line.slice(4)))}</h3>`);
+        return;
       }
-
-      if (safe.startsWith("```") && safe.endsWith("```")) {
-        const lines = safe.split("\n");
-        const lang = lines[0].slice(3).trim();
-        const code = lines.slice(1, -1).join("\n");
-        return `<pre><code class="lang-${lang}">${code}</code></pre>`;
+      if (line.startsWith("## ")) {
+        html.push(`<h2>${inlineMarkdown(escapeHtml(line.slice(3)))}</h2>`);
+        return;
       }
+      if (line.startsWith("# ")) {
+        html.push(`<h1>${inlineMarkdown(escapeHtml(line.slice(2)))}</h1>`);
+        return;
+      }
+    }
 
-      return `<p>${inlineMarkdown(safe).replaceAll("\n", "<br />")}</p>`;
-    })
-    .filter(Boolean)
-    .join("\n");
+    const isList = blockLines.every((line) => line.trim().startsWith("- "));
+    if (isList) {
+      const items = blockLines
+        .map((line) => line.trim().slice(2))
+        .map((item) => `<li>${inlineMarkdown(escapeHtml(item))}</li>`)
+        .join("");
+      html.push(`<ul>${items}</ul>`);
+      return;
+    }
+
+    html.push(`<p>${inlineMarkdown(escapeHtml(block)).replaceAll("\n", "<br />")}</p>`);
+  };
+
+  for (const line of lines) {
+    if (inCodeBlock) {
+      if (line.startsWith("```")) {
+        const code = highlightCode(codeLines.join("\n"), codeLang);
+        html.push(`<pre><code class="lang-${codeLang} hl-code">${code}</code></pre>`);
+        inCodeBlock = false;
+        codeLang = "";
+        codeLines = [];
+      } else {
+        codeLines.push(line);
+      }
+      continue;
+    }
+
+    if (line.startsWith("```")) {
+      flushTextBuffer();
+      inCodeBlock = true;
+      codeLang = line.slice(3).trim();
+      codeLines = [];
+      continue;
+    }
+
+    if (line.trim() === "") {
+      flushTextBuffer();
+      continue;
+    }
+
+    textBuffer.push(line);
+  }
+
+  flushTextBuffer();
+
+  if (inCodeBlock) {
+    const code = highlightCode(codeLines.join("\n"), codeLang);
+    html.push(`<pre><code class="lang-${codeLang} hl-code">${code}</code></pre>`);
+  }
+
+  return html.join("\n");
 }
 
 function countWords(text) {

@@ -457,6 +457,37 @@ body {
 .markdown-body pre code {
   background: transparent;
   padding: 0;
+  color: #e9eef8;
+}
+
+.markdown-body .hl-code .tok-keyword {
+  color: #7dc6ff;
+}
+
+.markdown-body .hl-code .tok-string {
+  color: #8de0a1;
+}
+
+.markdown-body .hl-code .tok-number {
+  color: #f6be73;
+}
+
+.markdown-body .hl-code .tok-comment {
+  color: #7f8aa0;
+  font-style: italic;
+}
+
+.markdown-body .hl-code .tok-operator {
+  color: #d8a0ff;
+}
+
+.markdown-body img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 16px 0;
+  border: 1px solid #2a3343;
 }
 
 .related-panel {
