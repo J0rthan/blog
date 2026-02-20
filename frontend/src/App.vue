@@ -5,6 +5,8 @@ import { getAllPosts } from "./lib/posts";
 const posts = getAllPosts();
 const selectedSlug = ref("");
 const isProjectsView = ref(false);
+const isHeaderCompact = ref(false);
+let lastScrollY = 0;
 
 const searchQuery = ref("");
 const selectedTag = ref("全部");
@@ -172,19 +174,39 @@ function syncFromHash() {
   selectedSlug.value = posts.some((post) => post.slug === slug) ? slug : "";
 }
 
+function handleScroll() {
+  const y = window.scrollY || 0;
+  if (y < 20) {
+    isHeaderCompact.value = false;
+    lastScrollY = y;
+    return;
+  }
+
+  if (y > lastScrollY + 6 && y > 120) {
+    isHeaderCompact.value = true;
+  } else if (y < lastScrollY - 6) {
+    isHeaderCompact.value = false;
+  }
+
+  lastScrollY = y;
+}
+
 onMounted(() => {
   syncFromHash();
+  lastScrollY = window.scrollY || 0;
   window.addEventListener("hashchange", syncFromHash);
+  window.addEventListener("scroll", handleScroll, { passive: true });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("hashchange", syncFromHash);
+  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
 <template>
   <div class="news-site">
-    <header class="site-header">
+    <header class="site-header" :class="{ compact: isHeaderCompact }">
       <div class="masthead">
         <h1 class="brand">Blog</h1>
         <div class="header-search" v-if="!isProjectsView && !isDetailView">
