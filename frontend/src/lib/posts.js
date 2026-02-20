@@ -142,6 +142,40 @@ function markdownToHtml(raw) {
       return;
     }
 
+    const isOrderedList = blockLines.every((line) => /^\s*\d+\.\s+/.test(line));
+    if (isOrderedList) {
+      const items = blockLines
+        .map((line) => line.replace(/^\s*\d+\.\s+/, ""))
+        .map((item) => `<li>${inlineMarkdown(escapeHtml(item))}</li>`)
+        .join("");
+      html.push(`<ol>${items}</ol>`);
+      return;
+    }
+
+    const isPipeTable = blockLines.length >= 2 && blockLines.every((line) => line.includes("|"));
+    if (isPipeTable) {
+      const sep = blockLines[1].trim();
+      const isSeparator = /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(sep);
+      if (isSeparator) {
+        const parseCells = (line) =>
+          line
+            .trim()
+            .replace(/^\|/, "")
+            .replace(/\|$/, "")
+            .split("|")
+            .map((cell) => inlineMarkdown(escapeHtml(cell.trim())));
+
+        const headers = parseCells(blockLines[0]);
+        const rows = blockLines.slice(2).map(parseCells);
+        const thead = `<thead><tr>${headers.map((cell) => `<th>${cell}</th>`).join("")}</tr></thead>`;
+        const tbody = `<tbody>${rows
+          .map((cells) => `<tr>${cells.map((cell) => `<td>${cell}</td>`).join("")}</tr>`)
+          .join("")}</tbody>`;
+        html.push(`<table>${thead}${tbody}</table>`);
+        return;
+      }
+    }
+
     html.push(`<p>${inlineMarkdown(escapeHtml(block)).replaceAll("\n", "<br />")}</p>`);
   };
 

@@ -5,6 +5,8 @@ import { getAllPosts } from "./lib/posts";
 const posts = getAllPosts();
 const selectedSlug = ref("");
 const isProjectsView = ref(false);
+const isHeaderCompact = ref(false);
+let lastScrollY = 0;
 
 const searchQuery = ref("");
 const selectedTag = ref("全部");
@@ -105,7 +107,7 @@ watch(totalPages, (pageCount) => {
 function openPost(slug) {
   selectedSlug.value = slug;
   isProjectsView.value = false;
-  window.location.hash = `#/post/${slug}`;
+  window.location.hash = `#/post/${encodeURIComponent(slug)}`;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -148,31 +150,51 @@ function syncFromHash() {
     return;
   }
 
-  const match = window.location.hash.match(/^#\/post\/([a-z0-9-]+)$/i);
+  const match = window.location.hash.match(/^#\/post\/(.+)$/);
   if (!match) {
     selectedSlug.value = "";
     isProjectsView.value = false;
     return;
   }
 
-  const slug = match[1];
+  const slug = decodeURIComponent(match[1]);
   isProjectsView.value = false;
   selectedSlug.value = posts.some((post) => post.slug === slug) ? slug : "";
 }
 
+function handleScroll() {
+  const y = window.scrollY || 0;
+  if (y < 20) {
+    isHeaderCompact.value = false;
+    lastScrollY = y;
+    return;
+  }
+
+  if (y > lastScrollY + 6 && y > 120) {
+    isHeaderCompact.value = true;
+  } else if (y < lastScrollY - 6) {
+    isHeaderCompact.value = false;
+  }
+
+  lastScrollY = y;
+}
+
 onMounted(() => {
   syncFromHash();
+  lastScrollY = window.scrollY || 0;
   window.addEventListener("hashchange", syncFromHash);
+  window.addEventListener("scroll", handleScroll, { passive: true });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("hashchange", syncFromHash);
+  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
 <template>
   <div class="news-site">
-    <header class="site-header">
+    <header class="site-header" :class="{ compact: isHeaderCompact }">
       <div class="masthead">
         <h1 class="brand">Blog</h1>
         <div class="header-search" v-if="!isProjectsView && !isDetailView">
