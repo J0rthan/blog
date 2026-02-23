@@ -2,7 +2,7 @@
 title: Dynamic Memory Allocation in C
 date: 2025-12-06
 summary: C 动态内存
-tags: C
+tags: C, dynamic memory,
 ---
 
 # Dynamic Memory Allocation in C

@@ -2,7 +2,7 @@
 title: C callbacks
 date: 2025-08-15
 summary: callbacks
-tags: C
+tags: C, callbacks
 ---
 # Callbacks in C
 

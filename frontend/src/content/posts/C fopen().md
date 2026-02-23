@@ -2,7 +2,7 @@
 title: C fopen() function
 date: 2025-12-06
 summary: fopen()
-tags: C
+tags: C, fopen(),
 ---
 # C fopen() Function
 

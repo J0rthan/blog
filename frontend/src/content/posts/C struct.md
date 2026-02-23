@@ -2,7 +2,7 @@
 title: C struct
 date: 2025-06-08
 summary: C结构体
-tags: C
+tags: C, struct
 ---
 # C Struct
 
