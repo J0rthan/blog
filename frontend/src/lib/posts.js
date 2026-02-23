@@ -18,8 +18,14 @@ function highlightCode(code, lang = "") {
     return key;
   };
 
+  // protect entities first so later regex (especially numbers) won't split `&#39;`
+  let highlighted = source.replace(
+    /&(amp|lt|gt|quot|#39);/g,
+    (m) => stash(m),
+  );
+
   // comments first to avoid getting matched by keyword/string rules
-  let highlighted = source
+  highlighted = highlighted
     .replace(/(\/\/[^\n]*)/g, (m) => stash(`<span class="tok-comment">${m}</span>`))
     .replace(/(\/\*[\s\S]*?\*\/)/g, (m) => stash(`<span class="tok-comment">${m}</span>`))
     .replace(/(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;)/g, (m) => stash(`<span class="tok-string">${m}</span>`));
